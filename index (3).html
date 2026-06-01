@@ -1,0 +1,758 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Astronomy 15 — Universe Assessment</title>
+  <meta name="description" content="Interactive Alberta Astronomy 15 curriculum assessment covering Big Bang Theory, Stellar Evolution, Size of the Universe, Spectrum &amp; Colors, and Dark Matter &amp; Energy." />
+  <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <style>
+    html, body { margin: 0; padding: 0; background: #020617; }
+    #root { min-height: 100vh; }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+
+  <script type="text/babel">
+    const { useState } = React;
+
+
+// ─── Deterministic star field (no Math.random in render) ────────────────────
+const STARS = Array.from({ length: 140 }, (_, i) => {
+  const phi = 0.618033988749895;
+  return {
+    id: i,
+    x: ((i * phi * 97.3) % 100),
+    y: ((i * phi * 61.8) % 100),
+    r: i % 9 === 0 ? 2 : i % 4 === 0 ? 1.5 : 1,
+    o: 0.25 + (i % 8) * 0.08,
+    d: 2.5 + (i % 5) * 0.7,
+    delay: (i % 10) * 0.35,
+  };
+});
+
+// ─── Module Data ─────────────────────────────────────────────────────────────
+const MODS = [
+  {
+    id: 1, icon: "💥", color: "#A78BFA", dark: "#1E1B4B",
+    title: "Big Bang Theory",
+    subtitle: "Origin of the Universe",
+    overview: "The Big Bang Theory is the prevailing cosmological model explaining how the universe began approximately 13.8 billion years ago from an extremely hot, dense singularity and has been expanding ever since. This theory is supported by three powerful lines of evidence.",
+    facts: [
+      { icon: "📅", h: "Age of the Universe", b: "~13.8 billion years old, determined from CMB observations and the ages of the oldest stars" },
+      { icon: "📡", h: "Cosmic Microwave Background (CMB)", b: "Thermal afterglow from ~380,000 years after the Big Bang, discovered in 1964 by Penzias & Wilson" },
+      { icon: "🔴", h: "Hubble's Law (1929)", b: "Galaxies recede at speeds proportional to their distances (v = H₀ × d), proving expansion" },
+      { icon: "⚛️", h: "Nucleosynthesis", b: "First 3 minutes: H (~75%) and He (~25%) formed. Heavier elements forged later inside stars" },
+      { icon: "⚡", h: "Cosmic Inflation", b: "Universe expanded exponentially fast in the first 10⁻³² seconds after the Bang" },
+    ],
+    extraType: "timeline",
+    extraTitle: "Timeline of the Universe",
+    extraItems: [
+      { t: "t = 0", e: "Big Bang — singularity" },
+      { t: "10⁻³² sec", e: "Cosmic inflation" },
+      { t: "3 minutes", e: "Nucleosynthesis — H & He form" },
+      { t: "380,000 yrs", e: "Recombination — CMB released" },
+      { t: "200 million yrs", e: "First stars ignite" },
+      { t: "13.8 billion yrs", e: "Today" },
+    ],
+    qs: [
+      { q: "How old is the universe according to current scientific evidence?", opts: ["4.6 billion years", "13.8 billion years", "100 billion years", "1 trillion years"], ans: 1, exp: "The universe is ~13.8 billion years old, determined from the Cosmic Microwave Background (CMB) temperature fluctuations and the measured ages of the oldest globular cluster stars." },
+      { q: "Which of the following is NOT direct evidence for the Big Bang?", opts: ["Cosmic Microwave Background radiation", "Redshift of distant galaxies", "The existence of black holes", "Abundance of hydrogen and helium"], ans: 2, exp: "Black holes are fascinating but are not direct Big Bang evidence. The three pillars are: CMB radiation, galaxy redshift (Hubble's Law), and the observed H/He abundance matching nucleosynthesis predictions." },
+      { q: "What does Hubble's Law describe?", opts: ["The life cycle of stars by mass", "Galaxies receding at speeds proportional to distance", "How black holes grow over time", "Star color based on temperature"], ans: 1, exp: "Hubble's Law states v = H₀ × d — galaxies recede at velocities proportional to their distances from us. This was the first observational proof that the universe is expanding." },
+      { q: "Cosmic Microwave Background (CMB) radiation is best described as:", opts: ["Light emitted by the very first stars", "Radiation from supermassive black holes", "The thermal afterglow from the early hot universe", "Gamma rays produced by supernovae"], ans: 2, exp: "The CMB is the thermal afterglow from ~380,000 years after the Big Bang, when the universe cooled enough for neutral hydrogen to form, releasing photons that still permeate all of space today." },
+      { q: "Which elements were produced during Big Bang Nucleosynthesis?", opts: ["Carbon and oxygen", "Iron and nickel", "Hydrogen and helium", "Silicon and sulfur"], ans: 2, exp: "Big Bang Nucleosynthesis occurred in the first ~3 minutes, producing ~75% hydrogen and ~25% helium (by mass), plus traces of lithium and deuterium. All heavier elements were forged later inside stars." },
+    ],
+  },
+  {
+    id: 2, icon: "⭐", color: "#FBBF24", dark: "#1C1005",
+    title: "Stellar Evolution",
+    subtitle: "Life Cycles of Stars",
+    overview: "Stars are born from collapsing clouds of gas and dust, shine by fusing lighter elements into heavier ones, and end in ways determined entirely by their mass — from quiet white dwarfs to spectacular supernovae that seed the universe with heavy elements.",
+    facts: [
+      { icon: "☁️", h: "Star Birth", b: "Stars form when nebulae (gas & dust clouds) collapse under gravity until the core ignites nuclear fusion" },
+      { icon: "☀️", h: "Main Sequence", b: "Stars fuse H → He in their cores; this stable phase lasts billions of years (Sun: ~10 billion yrs total)" },
+      { icon: "📊", h: "H-R Diagram", b: "Plots luminosity vs. surface temperature; main sequence runs diagonally, giants top-right, white dwarfs bottom-left" },
+      { icon: "🌟", h: "Low/Medium Mass Path", b: "Nebula → Protostar → Main Sequence → Red Giant → Planetary Nebula → White Dwarf" },
+      { icon: "💫", h: "High Mass Path", b: "Nebula → Protostar → Main Sequence → Red Supergiant → Supernova → Neutron Star or Black Hole" },
+    ],
+    extraType: "table",
+    extraTitle: "Stellar Spectral Classification (O-B-A-F-G-K-M)",
+    extraCols: ["Class", "Color", "Temp (K)", "Example"],
+    extraRows: [
+      ["O", "Blue", "> 30,000", "Rigel"],
+      ["B", "Blue-white", "10,000–30,000", "Spica"],
+      ["A", "White", "7,500–10,000", "Sirius"],
+      ["F", "Yellow-white", "6,000–7,500", "Procyon"],
+      ["G", "Yellow", "5,200–6,000", "The Sun ☀️"],
+      ["K", "Orange", "3,700–5,200", "Arcturus"],
+      ["M", "Red", "< 3,700", "Betelgeuse"],
+    ],
+    qs: [
+      { q: "What is the primary energy-producing process in main sequence stars?", opts: ["Nuclear fission of heavy atoms", "Gravitational contraction alone", "Nuclear fusion of hydrogen into helium", "Chemical combustion of stellar gas"], ans: 2, exp: "Main sequence stars generate energy through nuclear fusion — hydrogen nuclei (protons) are fused under extreme pressure and temperature to form helium, releasing energy per E = mc². This process powers our Sun." },
+      { q: "On an H-R diagram, where are white dwarf stars located?", opts: ["Upper left — hot and very bright", "Upper right — cool and very bright", "Lower left — hot but very dim", "Lower right — cool and dim"], ans: 2, exp: "White dwarfs appear lower-left on the H-R diagram. They are very hot (remnants of stellar cores), but extremely small (Earth-sized), so their low surface area means low luminosity (dim) despite high temperature." },
+      { q: "What is the final fate of a star with more than 8 solar masses?", opts: ["Becomes a white dwarf", "Becomes a neutron star or black hole", "Stays a red giant permanently", "Remains on the main sequence"], ans: 1, exp: "Stars >8 solar masses end as supernovae. The remnant core collapses: between ~1.4–3 solar masses → neutron star; above that → black hole. The ejected material enriches the galaxy with heavy elements." },
+      { q: "What happens during a Type II supernova?", opts: ["A nebula collapses to form a new star", "A star first begins fusing helium", "A massive star's iron core collapses, explosively ejecting its outer layers", "Two neutron stars slowly spiral together and merge"], ans: 2, exp: "When a massive star accumulates an iron core (iron cannot be fused for energy), it collapses in under a second. The shockwave blasts the outer layers at ~10% the speed of light, briefly outshining an entire galaxy." },
+      { q: "Which description best fits our Sun today?", opts: ["A red supergiant near the end of its life", "A G-type yellow main sequence star, about halfway through its life", "A white dwarf slowly cooling in space", "A blue giant consuming helium in its core"], ans: 1, exp: "The Sun is a G2V main sequence star. At ~4.6 billion years old, it has approximately 5 billion years of hydrogen fusion remaining before it expands into a red giant and eventually leaves behind a white dwarf." },
+    ],
+  },
+  {
+    id: 3, icon: "🌌", color: "#22D3EE", dark: "#051820",
+    title: "Size of the Universe",
+    subtitle: "Scale & Cosmic Distance",
+    overview: "The universe is incomprehensibly vast. Astronomers use a ladder of distance units and measurement techniques — from parallax for nearby stars to Hubble's Law for the most distant galaxies — to map the cosmos.",
+    facts: [
+      { icon: "🌍", h: "Astronomical Unit (AU)", b: "1 AU = ~150 million km — the average Earth–Sun distance; used within the solar system" },
+      { icon: "💡", h: "Light Year (ly)", b: "1 light year = ~9.46 trillion km — the distance light travels in one year; used for interstellar distances" },
+      { icon: "📏", h: "Parsec (pc)", b: "1 parsec = 3.26 light years — used by professional astronomers (1 kiloparsec = 3,260 ly)" },
+      { icon: "🌀", h: "The Milky Way", b: "~100,000 light years across, containing 200–400 billion stars. Our Sun sits ~26,000 ly from the center" },
+      { icon: "🔭", h: "Distance Ladder", b: "Parallax (nearby) → Cepheid Variables (mid-range) → Type Ia Supernovae → Hubble's Law (farthest)" },
+    ],
+    extraType: "scale",
+    extraTitle: "Cosmic Distance Scale",
+    extraItems: [
+      { obj: "Moon → Earth", d: "384,400 km", n: "1.3 light-seconds" },
+      { obj: "Sun → Earth", d: "1 AU", n: "8.3 light-minutes" },
+      { obj: "Sun → Neptune", d: "~30 AU", n: "4.2 light-hours" },
+      { obj: "Proxima Centauri", d: "4.24 light years", n: "Nearest star to Sun" },
+      { obj: "Milky Way", d: "~100,000 ly", n: "Our galaxy's diameter" },
+      { obj: "Andromeda Galaxy", d: "~2.5 million ly", n: "Nearest large galaxy" },
+      { obj: "Observable Universe", d: "~93 billion ly", n: "Total diameter" },
+    ],
+    qs: [
+      { q: "What does 1 Astronomical Unit (AU) represent?", opts: ["Distance from Earth to the nearest star", "Average distance from Earth to the Sun", "Diameter of our solar system", "Distance light travels in one year"], ans: 1, exp: "1 AU = approximately 149.6 million kilometers. It represents the average distance between Earth and the Sun, and is the standard unit for measuring distances within our solar system." },
+      { q: "How long does light from the Sun take to reach Earth?", opts: ["About 1 second", "About 8 minutes", "About 1 hour", "About 24 hours"], ans: 1, exp: "Light travels at 300,000 km/s. Crossing the ~150 million km (1 AU) distance to Earth takes approximately 8 minutes and 20 seconds. This means we see the Sun as it was ~8 minutes ago." },
+      { q: "Approximately how wide is the Milky Way galaxy?", opts: ["1,000 light years", "10,000 light years", "100,000 light years", "1 billion light years"], ans: 2, exp: "The Milky Way spans approximately 100,000 light years across. Our solar system is located ~26,000 light years from the galactic center in the Orion Arm — one of several spiral arms." },
+      { q: "Which method measures stellar distances using Earth's orbital motion as a baseline?", opts: ["Spectral line analysis", "Standard candles (Cepheid variables)", "Stellar parallax", "Hubble's Law redshift"], ans: 2, exp: "Stellar parallax measures the apparent shift in a star's position when viewed from opposite sides of Earth's orbit (6 months apart). Trigonometry converts this angle into distance. Works for stars within ~1,000 light years." },
+      { q: "The observable universe has a diameter of approximately:", opts: ["1 million light years", "1 billion light years", "93 billion light years", "1 trillion light years"], ans: 2, exp: "The observable universe spans ~93 billion light years. Although the universe is only 13.8 billion years old, cosmic expansion means distant regions have moved far from where they were when their light was emitted — placing them ~46.5 billion ly away." },
+    ],
+  },
+  {
+    id: 4, icon: "🌈", color: "#34D399", dark: "#031510",
+    title: "Spectrum & Colors",
+    subtitle: "Light as an Astronomical Tool",
+    overview: "Light is our primary window to the universe. Through spectroscopy, astronomers determine the composition, temperature, velocity, and distance of objects billions of light years away — all from the light they emit or absorb.",
+    facts: [
+      { icon: "📻", h: "Electromagnetic Spectrum", b: "Low→High energy: Radio → Microwave → Infrared → Visible → UV → X-ray → Gamma ray" },
+      { icon: "🌡️", h: "Wien's Law", b: "Hotter objects emit at shorter (bluer) wavelengths. Blue-white stars are hottest; red stars are cooler" },
+      { icon: "✨", h: "Emission Spectra", b: "Bright colored lines show specific wavelengths emitted by excited elements — each element has a unique 'fingerprint'" },
+      { icon: "🌑", h: "Absorption Spectra", b: "Dark lines in stellar spectra form when cooler outer atmosphere atoms absorb specific wavelengths — reveals composition" },
+      { icon: "🔴", h: "Doppler Effect", b: "Redshift = source moving away (wavelengths stretched). Blueshift = source approaching (wavelengths compressed)" },
+    ],
+    extraType: "spectrum",
+    extraTitle: "The Electromagnetic Spectrum",
+    extraItems: [
+      { name: "Radio", λ: "> 1 m", use: "Radio galaxies, pulsars", color: "#EF4444" },
+      { name: "Microwave", λ: "1 mm–1 m", use: "CMB radiation", color: "#F97316" },
+      { name: "Infrared", λ: "700 nm–1 mm", use: "Cool stars, dust clouds", color: "#EAB308" },
+      { name: "Visible", λ: "400–700 nm", use: "Stars, galaxies", color: "#22C55E" },
+      { name: "Ultraviolet", λ: "10–400 nm", use: "Hot stars, nebulae", color: "#3B82F6" },
+      { name: "X-ray", λ: "0.01–10 nm", use: "Black holes, neutron stars", color: "#8B5CF6" },
+      { name: "Gamma", λ: "< 0.01 nm", use: "GRBs, supernova cores", color: "#EC4899" },
+    ],
+    qs: [
+      { q: "Which type of electromagnetic radiation has the highest energy per photon?", opts: ["Radio waves", "Infrared radiation", "Visible light", "Gamma rays"], ans: 3, exp: "Gamma rays have the highest energy because energy is proportional to frequency (E = hf), and gamma rays have the highest frequency (shortest wavelength) in the EM spectrum. They are produced by the most energetic cosmic events." },
+      { q: "A galaxy showing significant redshift indicates that it is:", opts: ["Moving toward us at high speed", "Moving away from us", "Not moving at all", "Unusually rich in iron"], ans: 1, exp: "Redshift occurs when a source moves away — light waves are stretched to longer (redder) wavelengths. The greater the redshift, the faster the recession. This is the primary observational evidence for cosmic expansion (Hubble's Law)." },
+      { q: "Dark absorption lines in a star's spectrum are produced by:", opts: ["Planets blocking specific wavelengths", "The star's magnetic field filtering radiation", "Atoms in the star's cooler outer atmosphere absorbing specific wavelengths", "Interstellar dust clouds absorbing starlight"], ans: 2, exp: "As light from the hot stellar core passes through the cooler outer atmosphere, atoms absorb photons at specific wavelengths matching electron energy transitions. This creates dark absorption lines — a unique chemical fingerprint revealing stellar composition." },
+      { q: "Which star color indicates the highest surface temperature?", opts: ["Red (~3,500 K)", "Yellow-orange (~4,500 K)", "Yellow (~5,800 K)", "Blue-white (>25,000 K)"], ans: 3, exp: "Blue-white stars are the hottest. Wien's Displacement Law states that as temperature increases, peak emission shifts to shorter (bluer) wavelengths. O and B class stars exceed 10,000–30,000+ K and appear blue-white." },
+      { q: "Our Sun belongs to which spectral classification?", opts: ["O-type — very hot, blue-white", "B-type — hot, blue-white", "G-type — medium temperature, yellow", "M-type — cool, red"], ans: 2, exp: "The Sun is classified G2V — a G-type main sequence star with a surface temperature of ~5,778 K. It appears yellow-white in space. About 7.5% of Milky Way stars are G-type; the most common are cooler M-type red dwarfs." },
+    ],
+  },
+  {
+    id: 5, icon: "🕳️", color: "#C084FC", dark: "#0D0520",
+    title: "Dark Matter & Dark Energy",
+    subtitle: "The Invisible Universe",
+    overview: "About 95% of the universe is invisible — dark matter and dark energy neither emit, absorb, nor reflect light, yet they dominate the structure, behaviour, and ultimate fate of the cosmos. Their true nature remains one of science's greatest unsolved mysteries.",
+    facts: [
+      { icon: "📊", h: "Universe Composition", b: "~5% ordinary matter, ~27% dark matter, ~68% dark energy — we can only directly observe 5%!" },
+      { icon: "🌀", h: "Galaxy Rotation Curves", b: "Vera Rubin (1970s): outer stars orbit as fast as inner ones, requiring unseen 'dark matter' halos for stability" },
+      { icon: "🔍", h: "Gravitational Lensing", b: "Dark matter bends light around galaxy clusters more than visible mass can explain, revealing its distribution" },
+      { icon: "🏆", h: "Dark Energy Discovery", b: "1998: Perlmutter, Schmidt & Riess found Type Ia supernovae dimmer than expected — expansion is accelerating!" },
+      { icon: "❓", h: "Unsolved Mysteries", b: "Dark matter candidates include WIMPs and axions; dark energy may be Einstein's cosmological constant (Λ)" },
+    ],
+    extraType: "pie",
+    extraTitle: "What Is the Universe Made Of?",
+    extraItems: [
+      { label: "Dark Energy", pct: 68, color: "#A855F7", desc: "Drives accelerating expansion" },
+      { label: "Dark Matter", pct: 27, color: "#6366F1", desc: "Holds galaxies together" },
+      { label: "Ordinary Matter", pct: 5, color: "#22D3EE", desc: "Everything we can see" },
+    ],
+    qs: [
+      { q: "Approximately what percentage of the universe is ordinary (baryonic) matter?", opts: ["~5%", "~27%", "~68%", "~95%"], ans: 0, exp: "Only ~5% of the universe is ordinary matter — atoms, molecules, stars, planets, gas, and dust. Everything we can observe directly makes up just a tiny fraction of the total energy-mass content of the universe." },
+      { q: "What observational evidence most directly supports dark matter in spiral galaxies?", opts: ["The high temperatures of galactic center stars", "Flat galaxy rotation curves showing edges orbit too fast", "Brightness of quasars near galaxy centers", "Age estimates of the oldest globular clusters"], ans: 1, exp: "Vera Rubin's galaxy rotation studies showed stars in outer regions orbit at roughly the same speed as inner stars — the rotation curves are 'flat.' Without hidden mass (dark matter halos), outer stars should orbit much slower, like outer planets in our solar system." },
+      { q: "Dark energy is thought to be primarily responsible for:", opts: ["Formation of supermassive black holes", "Holding galaxies together against gravity", "The accelerating expansion of the universe", "Creating dark matter particles"], ans: 2, exp: "Dark energy is a mysterious form of energy that permeates all space and acts as an outward pressure opposing gravity. It causes the universe's expansion to accelerate rather than slow down — a discovery that shocked cosmologists in 1998." },
+      { q: "What is gravitational lensing and why does it evidence dark matter?", opts: ["A special telescope to detect dark particles", "The bending of light by massive objects, revealing unseen mass", "A computer simulation of dark matter distribution", "A chemical test for dark energy"], ans: 1, exp: "General relativity predicts mass warps spacetime, bending passing light. When observed lensing around galaxy clusters is far greater than visible matter can produce, it reveals the presence of additional unseen mass — dark matter halos." },
+      { q: "Which 1998 discovery, awarded the 2011 Nobel Prize in Physics, provided key evidence for dark energy?", opts: ["First CMB detection by Penzias & Wilson in 1964", "First black hole image by the Event Horizon Telescope", "Type Ia supernovae found dimmer than expected — showing accelerating expansion", "Gravitational waves detected by LIGO in 2015"], ans: 2, exp: "Perlmutter, Schmidt, and Riess used Type Ia supernovae as 'standard candles.' They found the supernovae ~25% dimmer (farther) than expected — meaning the universe is accelerating rather than slowing. This implied the existence of 'dark energy' driving the acceleration." },
+    ],
+  },
+];
+
+// ─── Colour helpers ───────────────────────────────────────────────────────────
+const grade = (pct) => {
+  if (pct >= 90) return { g: "A+", label: "Outstanding", col: "#34D399" };
+  if (pct >= 80) return { g: "A", label: "Excellent", col: "#6EE7B7" };
+  if (pct >= 70) return { g: "B", label: "Proficient", col: "#FBBF24" };
+  if (pct >= 60) return { g: "C", label: "Developing", col: "#F97316" };
+  return { g: "D", label: "Needs Review", col: "#F87171" };
+};
+
+// ─── Shared UI ────────────────────────────────────────────────────────────────
+const Btn = ({ children, onClick, color = "#6D28D9", style = {} }) => (
+  <button
+    onClick={onClick}
+    style={{
+      background: `linear-gradient(135deg, ${color}CC, ${color})`,
+      border: "none", color: "#fff", padding: "12px 28px", borderRadius: 50,
+      fontSize: 14, fontWeight: 700, cursor: "pointer", letterSpacing: 0.5,
+      fontFamily: "'Orbitron', sans-serif",
+      boxShadow: `0 0 20px ${color}55`,
+      transition: "transform 0.15s, box-shadow 0.15s",
+      ...style,
+    }}
+    onMouseEnter={e => { e.currentTarget.style.transform = "scale(1.04)"; }}
+    onMouseLeave={e => { e.currentTarget.style.transform = "scale(1)"; }}
+  >
+    {children}
+  </button>
+);
+
+const Card = ({ children, style = {} }) => (
+  <div style={{
+    background: "rgba(255,255,255,0.05)", backdropFilter: "blur(12px)",
+    border: "1px solid rgba(255,255,255,0.12)", borderRadius: 16,
+    padding: "20px 24px", ...style,
+  }}>
+    {children}
+  </div>
+);
+
+// ─── Screens ─────────────────────────────────────────────────────────────────
+
+function IntroScreen({ onStart }) {
+  return (
+    <div style={{ textAlign: "center", padding: "20px 0", animation: "fadeIn 0.6s ease" }}>
+      <div style={{ fontSize: 72, marginBottom: 12, display: "inline-block", animation: "float 4s ease-in-out infinite" }}>🌌</div>
+      <div style={{ fontFamily: "'Orbitron', sans-serif", fontSize: 11, letterSpacing: 5, color: "#7DD3FC", marginBottom: 6, textTransform: "uppercase" }}>Alberta Astronomy 15</div>
+      <h1 style={{
+        fontFamily: "'Orbitron', sans-serif",
+        fontSize: "clamp(22px, 5vw, 36px)", fontWeight: 900, margin: "0 0 4px",
+        background: "linear-gradient(135deg, #C4B5FD 0%, #60A5FA 50%, #34D399 100%)",
+        WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent",
+      }}>
+        Universe Assessment
+      </h1>
+      <p style={{ color: "#94A3B8", maxWidth: 460, margin: "12px auto 24px", lineHeight: 1.75, fontSize: 14 }}>
+        A comprehensive interactive journey through five core Astronomy 15 topics. Each module includes a <strong style={{ color: "#C4B5FD" }}>learning phase</strong> followed by <strong style={{ color: "#60A5FA" }}>practice questions</strong> aligned with the Alberta curriculum.
+      </p>
+
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(130px, 1fr))", gap: 10, maxWidth: 660, margin: "0 auto 24px" }}>
+        {MODS.map(m => (
+          <Card key={m.id} style={{ padding: "14px 10px", textAlign: "center" }}>
+            <div style={{ fontSize: 26, marginBottom: 6 }}>{m.icon}</div>
+            <div style={{ fontSize: 11, color: m.color, fontWeight: 700, lineHeight: 1.3 }}>{m.title}</div>
+            <div style={{ fontSize: 10, color: "#64748B", marginTop: 2 }}>{m.subtitle}</div>
+          </Card>
+        ))}
+      </div>
+
+      <div style={{ display: "flex", gap: 12, justifyContent: "center", flexWrap: "wrap", marginBottom: 28 }}>
+        {[["📚", "5 Modules", "Learn & Apply"], ["❓", "25 Questions", "Multiple Choice"], ["🏆", "Scored", "Full Tracking"]].map(([ic, t, s]) => (
+          <div key={t} style={{ display: "flex", alignItems: "center", gap: 8, background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)", padding: "8px 16px", borderRadius: 10 }}>
+            <span style={{ fontSize: 18 }}>{ic}</span>
+            <div>
+              <div style={{ fontSize: 12, fontWeight: 600 }}>{t}</div>
+              <div style={{ fontSize: 10, color: "#64748B" }}>{s}</div>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      <Btn onClick={onStart} color="#7C3AED" style={{ fontSize: 15, padding: "14px 40px" }}>
+        Begin Exploration →
+      </Btn>
+    </div>
+  );
+}
+
+function LearnScreen({ mod, step, setStep, onQuiz }) {
+  const steps = ["Overview", "Key Concepts", "Reference"];
+  const isLast = step === 2;
+
+  return (
+    <div style={{ animation: "fadeIn 0.4s ease" }}>
+      {/* Module header */}
+      <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 16 }}>
+        <div style={{ fontSize: 36 }}>{mod.icon}</div>
+        <div>
+          <div style={{ fontFamily: "'Orbitron', sans-serif", fontSize: "clamp(14px, 3vw, 20px)", fontWeight: 700, color: mod.color }}>{mod.title}</div>
+          <div style={{ fontSize: 12, color: "#64748B" }}>{mod.subtitle}</div>
+        </div>
+        <div style={{ marginLeft: "auto", background: `${mod.color}22`, border: `1px solid ${mod.color}44`, borderRadius: 20, padding: "4px 12px", fontSize: 11, color: mod.color, fontFamily: "'Orbitron', sans-serif" }}>
+          LEARN
+        </div>
+      </div>
+
+      {/* Step tabs */}
+      <div style={{ display: "flex", gap: 8, marginBottom: 16 }}>
+        {steps.map((s, i) => (
+          <button key={s} onClick={() => setStep(i)} style={{
+            background: step === i ? `${mod.color}33` : "rgba(255,255,255,0.04)",
+            border: `1px solid ${step === i ? mod.color : "rgba(255,255,255,0.1)"}`,
+            color: step === i ? mod.color : "#64748B",
+            padding: "5px 14px", borderRadius: 20, fontSize: 12, cursor: "pointer",
+            fontWeight: step === i ? 700 : 400, transition: "all 0.2s",
+          }}>
+            {s}
+          </button>
+        ))}
+      </div>
+
+      {/* Step 0: Overview */}
+      {step === 0 && (
+        <Card>
+          <h3 style={{ margin: "0 0 12px", color: mod.color, fontFamily: "'Orbitron', sans-serif", fontSize: 14 }}>Module Overview</h3>
+          <p style={{ margin: "0 0 16px", color: "#CBD5E1", lineHeight: 1.8, fontSize: 14 }}>{mod.overview}</p>
+          <div style={{ background: `${mod.color}15`, border: `1px solid ${mod.color}30`, borderRadius: 10, padding: "12px 16px" }}>
+            <div style={{ fontSize: 11, color: mod.color, fontWeight: 700, marginBottom: 4, letterSpacing: 1 }}>📋 ALBERTA CURRICULUM ALIGNMENT</div>
+            <div style={{ fontSize: 12, color: "#94A3B8", lineHeight: 1.6 }}>
+              This module aligns with the Alberta Astronomy 15 Science curriculum — covering key outcomes related to {mod.title.toLowerCase()} and cosmological concepts for Grade 10–12 students.
+            </div>
+          </div>
+        </Card>
+      )}
+
+      {/* Step 1: Key facts */}
+      {step === 1 && (
+        <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+          {mod.facts.map((f, i) => (
+            <Card key={i} style={{ display: "flex", gap: 14, alignItems: "flex-start", padding: "14px 18px", animation: `fadeIn 0.3s ease ${i * 0.07}s both` }}>
+              <span style={{ fontSize: 22, flexShrink: 0, marginTop: 2 }}>{f.icon}</span>
+              <div>
+                <div style={{ fontWeight: 700, color: mod.color, fontSize: 13, marginBottom: 3 }}>{f.h}</div>
+                <div style={{ color: "#94A3B8", fontSize: 13, lineHeight: 1.65 }}>{f.b}</div>
+              </div>
+            </Card>
+          ))}
+        </div>
+      )}
+
+      {/* Step 2: Extra reference */}
+      {step === 2 && <ExtraContent mod={mod} />}
+
+      {/* Navigation */}
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: 20 }}>
+        {step > 0
+          ? <Btn onClick={() => setStep(s => s - 1)} color="#334155" style={{ boxShadow: "none" }}>← Back</Btn>
+          : <div />
+        }
+        {isLast
+          ? <Btn onClick={onQuiz} color={mod.glow || mod.color}>Start Quiz →</Btn>
+          : <Btn onClick={() => setStep(s => s + 1)} color={mod.glow || mod.color}>Next →</Btn>
+        }
+      </div>
+    </div>
+  );
+}
+
+function ExtraContent({ mod }) {
+  if (mod.extraType === "timeline") {
+    return (
+      <Card>
+        <h3 style={{ margin: "0 0 16px", color: mod.color, fontFamily: "'Orbitron', sans-serif", fontSize: 13 }}>{mod.extraTitle}</h3>
+        <div style={{ position: "relative" }}>
+          <div style={{ position: "absolute", left: 68, top: 0, bottom: 0, width: 2, background: `linear-gradient(to bottom, ${mod.color}, ${mod.color}22)` }} />
+          {mod.extraItems.map((item, i) => (
+            <div key={i} style={{ display: "flex", gap: 16, marginBottom: 18, alignItems: "flex-start" }}>
+              <div style={{ width: 68, flexShrink: 0, textAlign: "right", fontSize: 10, color: mod.color, fontFamily: "'Orbitron', sans-serif", fontWeight: 700, paddingTop: 4 }}>{item.t}</div>
+              <div style={{ width: 12, height: 12, borderRadius: "50%", background: mod.color, flexShrink: 0, marginTop: 3, boxShadow: `0 0 8px ${mod.color}` }} />
+              <div style={{ fontSize: 13, color: "#CBD5E1", lineHeight: 1.5 }}>{item.e}</div>
+            </div>
+          ))}
+        </div>
+      </Card>
+    );
+  }
+
+  if (mod.extraType === "table") {
+    return (
+      <Card>
+        <h3 style={{ margin: "0 0 14px", color: mod.color, fontFamily: "'Orbitron', sans-serif", fontSize: 13 }}>{mod.extraTitle}</h3>
+        <div style={{ overflowX: "auto" }}>
+          <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 12 }}>
+            <thead>
+              <tr>{mod.extraCols.map(c => (
+                <th key={c} style={{ background: `${mod.color}33`, color: mod.color, padding: "8px 10px", textAlign: "left", borderBottom: `2px solid ${mod.color}44`, fontFamily: "'Orbitron', sans-serif", fontSize: 10, letterSpacing: 0.5 }}>{c}</th>
+              ))}</tr>
+            </thead>
+            <tbody>
+              {mod.extraRows.map((row, i) => (
+                <tr key={i} style={{ background: row[2]?.includes("5,200") ? `${mod.color}15` : "transparent" }}>
+                  {row.map((cell, j) => (
+                    <td key={j} style={{ padding: "8px 10px", borderBottom: "1px solid rgba(255,255,255,0.07)", color: j === 0 ? mod.color : "#94A3B8", fontWeight: j === 0 ? 700 : 400 }}>{cell}</td>
+                  ))}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+        <div style={{ marginTop: 12, fontSize: 11, color: "#475569", textAlign: "center" }}>
+          Mnemonic: <span style={{ color: mod.color, fontStyle: "italic" }}>"Oh Be A Fine Guy, Kiss Me"</span>
+        </div>
+      </Card>
+    );
+  }
+
+  if (mod.extraType === "scale") {
+    return (
+      <Card>
+        <h3 style={{ margin: "0 0 14px", color: mod.color, fontFamily: "'Orbitron', sans-serif", fontSize: 13 }}>{mod.extraTitle}</h3>
+        {mod.extraItems.map((item, i) => (
+          <div key={i} style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 10, animation: `fadeIn 0.3s ease ${i * 0.06}s both` }}>
+            <div style={{ flex: 1, height: 6, background: `linear-gradient(90deg, ${mod.color}, ${mod.color}33)`, borderRadius: 3, minWidth: (i + 1) * 10 + "%", maxWidth: "100%", transition: "all 0.3s" }} />
+            <div style={{ minWidth: 0, flex: 2 }}>
+              <div style={{ fontSize: 12, color: "#E2E8F0", fontWeight: 600 }}>{item.obj}</div>
+              <div style={{ fontSize: 11, color: mod.color }}>{item.d}</div>
+              <div style={{ fontSize: 10, color: "#475569" }}>{item.n}</div>
+            </div>
+          </div>
+        ))}
+      </Card>
+    );
+  }
+
+  if (mod.extraType === "spectrum") {
+    return (
+      <Card>
+        <h3 style={{ margin: "0 0 14px", color: mod.color, fontFamily: "'Orbitron', sans-serif", fontSize: 13 }}>{mod.extraTitle}</h3>
+        {mod.extraItems.map((item, i) => (
+          <div key={i} style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 8, animation: `fadeIn 0.3s ease ${i * 0.07}s both` }}>
+            <div style={{ width: 10, height: 10, borderRadius: "50%", background: item.color, flexShrink: 0, boxShadow: `0 0 8px ${item.color}` }} />
+            <div style={{ width: 70, fontSize: 12, fontWeight: 700, color: item.color }}>{item.name}</div>
+            <div style={{ width: 90, fontSize: 11, color: "#64748B", fontFamily: "monospace" }}>{item.λ}</div>
+            <div style={{ fontSize: 11, color: "#94A3B8" }}>{item.use}</div>
+          </div>
+        ))}
+        <div style={{ marginTop: 14, padding: "10px 14px", background: "rgba(255,255,255,0.04)", borderRadius: 8, fontSize: 12, color: "#94A3B8" }}>
+          💡 <strong style={{ color: "#E2E8F0" }}>Key insight:</strong> Energy increases from left (radio) to right (gamma). Astronomers use all wavelengths to study different cosmic phenomena.
+        </div>
+      </Card>
+    );
+  }
+
+  if (mod.extraType === "pie") {
+    return (
+      <Card>
+        <h3 style={{ margin: "0 0 16px", color: mod.color, fontFamily: "'Orbitron', sans-serif", fontSize: 13 }}>{mod.extraTitle}</h3>
+        <div style={{ display: "flex", gap: 16, flexWrap: "wrap", alignItems: "center" }}>
+          <svg viewBox="0 0 100 100" style={{ width: 160, height: 160, flexShrink: 0 }}>
+            {(() => {
+              let start = -90;
+              return mod.extraItems.map((item, i) => {
+                const deg = item.pct * 3.6;
+                const r = 45, cx = 50, cy = 50;
+                const x1 = cx + r * Math.cos((start * Math.PI) / 180);
+                const y1 = cy + r * Math.sin((start * Math.PI) / 180);
+                const x2 = cx + r * Math.cos(((start + deg) * Math.PI) / 180);
+                const y2 = cy + r * Math.sin(((start + deg) * Math.PI) / 180);
+                const large = deg > 180 ? 1 : 0;
+                const d = `M ${cx} ${cy} L ${x1} ${y1} A ${r} ${r} 0 ${large} 1 ${x2} ${y2} Z`;
+                const midAngle = start + deg / 2;
+                const lx = cx + 28 * Math.cos((midAngle * Math.PI) / 180);
+                const ly = cy + 28 * Math.sin((midAngle * Math.PI) / 180);
+                start += deg;
+                return (
+                  <g key={i}>
+                    <path d={d} fill={item.color} opacity={0.85} />
+                    <text x={lx} y={ly} textAnchor="middle" dominantBaseline="middle" fill="white" fontSize={8} fontWeight="bold">{item.pct}%</text>
+                  </g>
+                );
+              });
+            })()}
+          </svg>
+          <div style={{ flex: 1 }}>
+            {mod.extraItems.map((item, i) => (
+              <div key={i} style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 12 }}>
+                <div style={{ width: 14, height: 14, borderRadius: 3, background: item.color, flexShrink: 0 }} />
+                <div>
+                  <div style={{ fontSize: 13, fontWeight: 700, color: item.color }}>{item.label} — {item.pct}%</div>
+                  <div style={{ fontSize: 11, color: "#64748B" }}>{item.desc}</div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </Card>
+    );
+  }
+  return null;
+}
+
+function QuizScreen({ mod, modIdx, qIdx, sel, feedback, onSelect, onNext, scores }) {
+  const q = mod.qs[qIdx];
+  const totalQ = mod.qs.length;
+  const isCorrect = sel === q.ans;
+
+  return (
+    <div style={{ animation: "fadeIn 0.4s ease" }}>
+      {/* Header */}
+      <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 14 }}>
+        <span style={{ fontSize: 28 }}>{mod.icon}</span>
+        <div style={{ flex: 1 }}>
+          <div style={{ fontFamily: "'Orbitron', sans-serif", fontSize: 12, color: mod.color, fontWeight: 700 }}>{mod.title}</div>
+          <div style={{ fontSize: 11, color: "#475569" }}>Question {qIdx + 1} of {totalQ}</div>
+        </div>
+        <div style={{ fontFamily: "'Orbitron', sans-serif", fontSize: 12, background: `${mod.color}22`, color: mod.color, padding: "4px 12px", borderRadius: 20 }}>
+          {scores[modIdx]}/{qIdx + (feedback ? 1 : 0)}
+        </div>
+      </div>
+
+      {/* Progress dots */}
+      <div style={{ display: "flex", gap: 6, marginBottom: 18 }}>
+        {mod.qs.map((_, i) => (
+          <div key={i} style={{ flex: 1, height: 4, borderRadius: 2, background: i < qIdx ? mod.color : i === qIdx ? `${mod.color}88` : "rgba(255,255,255,0.1)", transition: "background 0.3s" }} />
+        ))}
+      </div>
+
+      {/* Question card */}
+      <Card style={{ marginBottom: 14 }}>
+        <p style={{ margin: 0, fontSize: 15, color: "#E2E8F0", lineHeight: 1.75, fontWeight: 500 }}>{q.q}</p>
+      </Card>
+
+      {/* Options */}
+      <div style={{ display: "flex", flexDirection: "column", gap: 8, marginBottom: 16 }}>
+        {q.opts.map((opt, i) => {
+          let bg = "rgba(255,255,255,0.04)";
+          let border = "1px solid rgba(255,255,255,0.1)";
+          let col = "#CBD5E1";
+          if (feedback) {
+            if (i === q.ans) { bg = "rgba(52,211,153,0.15)"; border = "1px solid #34D399"; col = "#34D399"; }
+            else if (i === sel && sel !== q.ans) { bg = "rgba(248,113,113,0.15)"; border = "1px solid #F87171"; col = "#F87171"; }
+          } else if (sel === i) { bg = `${mod.color}22`; border = `1px solid ${mod.color}`; col = mod.color; }
+
+          return (
+            <button key={i} onClick={() => onSelect(i)} disabled={feedback} style={{
+              background: bg, border, color: col, padding: "12px 16px", borderRadius: 12,
+              textAlign: "left", cursor: feedback ? "default" : "pointer", fontSize: 13,
+              lineHeight: 1.5, transition: "all 0.2s", display: "flex", alignItems: "center", gap: 10,
+            }}>
+              <span style={{ width: 22, height: 22, borderRadius: "50%", background: feedback && i === q.ans ? "#34D399" : feedback && i === sel && sel !== q.ans ? "#F87171" : `${mod.color}33`, color: feedback && i === q.ans ? "#fff" : col, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 11, fontWeight: 700, flexShrink: 0 }}>
+                {feedback && i === q.ans ? "✓" : feedback && i === sel && sel !== q.ans ? "✗" : String.fromCharCode(65 + i)}
+              </span>
+              {opt}
+            </button>
+          );
+        })}
+      </div>
+
+      {/* Feedback explanation */}
+      {feedback && (
+        <Card style={{ marginBottom: 16, background: isCorrect ? "rgba(52,211,153,0.08)" : "rgba(248,113,113,0.08)", border: `1px solid ${isCorrect ? "#34D39944" : "#F8717144"}` }}>
+          <div style={{ fontSize: 13, fontWeight: 700, color: isCorrect ? "#34D399" : "#F87171", marginBottom: 6 }}>
+            {isCorrect ? "✓ Correct!" : "✗ Not quite — here's why:"}
+          </div>
+          <div style={{ fontSize: 13, color: "#94A3B8", lineHeight: 1.7 }}>{q.exp}</div>
+        </Card>
+      )}
+
+      {feedback && (
+        <div style={{ textAlign: "right" }}>
+          <Btn onClick={onNext} color={mod.glow || mod.color}>
+            {qIdx < mod.qs.length - 1 ? "Next Question →" : "Module Complete →"}
+          </Btn>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function ModEndScreen({ mod, modIdx, score, total, onNext, isLast }) {
+  const pct = Math.round((score / total) * 100);
+  const g = grade(pct);
+  return (
+    <div style={{ textAlign: "center", animation: "fadeIn 0.5s ease", padding: "20px 0" }}>
+      <div style={{ fontSize: 56, marginBottom: 10, animation: "float 3s ease-in-out infinite" }}>{mod.icon}</div>
+      <h2 style={{ fontFamily: "'Orbitron', sans-serif", fontSize: 20, color: mod.color, margin: "0 0 4px" }}>{mod.title}</h2>
+      <p style={{ color: "#64748B", margin: "0 0 24px", fontSize: 13 }}>Module Complete</p>
+
+      <div style={{ display: "inline-flex", flexDirection: "column", alignItems: "center", background: `${mod.color}15`, border: `2px solid ${mod.color}44`, borderRadius: 20, padding: "24px 40px", marginBottom: 24 }}>
+        <div style={{ fontFamily: "'Orbitron', sans-serif", fontSize: 52, fontWeight: 900, color: g.col, lineHeight: 1 }}>{score}/{total}</div>
+        <div style={{ fontSize: 14, color: g.col, marginTop: 4 }}>{g.label}</div>
+        <div style={{ fontSize: 28, fontWeight: 900, color: g.col, fontFamily: "'Orbitron', sans-serif" }}>{pct}%</div>
+      </div>
+
+      {score < total && (
+        <p style={{ color: "#64748B", fontSize: 13, margin: "0 0 20px", maxWidth: 360, marginLeft: "auto", marginRight: "auto" }}>
+          💡 Review the learning materials and try again later to improve your score!
+        </p>
+      )}
+
+      <Btn onClick={onNext} color={mod.glow || mod.color} style={{ fontSize: 15 }}>
+        {isLast ? "View Final Results 🏆" : `Continue to ${MODS[modIdx + 1]?.title || "Next Module"} →`}
+      </Btn>
+    </div>
+  );
+}
+
+function FinalScreen({ scores, onRestart }) {
+  const total = MODS.reduce((a, m) => a + m.qs.length, 0);
+  const totalScore = scores.reduce((a, b) => a + b, 0);
+  const pct = Math.round((totalScore / total) * 100);
+  const g = grade(pct);
+
+  return (
+    <div style={{ animation: "fadeIn 0.6s ease" }}>
+      <div style={{ textAlign: "center", marginBottom: 28 }}>
+        <div style={{ fontSize: 60, marginBottom: 8, animation: "float 4s ease-in-out infinite" }}>🏆</div>
+        <div style={{ fontFamily: "'Orbitron', sans-serif", fontSize: 11, letterSpacing: 4, color: "#7DD3FC", marginBottom: 6, textTransform: "uppercase" }}>Assessment Complete</div>
+        <h2 style={{ fontFamily: "'Orbitron', sans-serif", fontSize: "clamp(18px, 4vw, 28px)", fontWeight: 900, margin: "0 0 16px", color: g.col }}>
+          {g.label}!
+        </h2>
+
+        <div style={{ display: "inline-flex", flexDirection: "column", alignItems: "center", background: `${g.col}15`, border: `2px solid ${g.col}44`, borderRadius: 20, padding: "20px 36px", marginBottom: 24 }}>
+          <div style={{ fontFamily: "'Orbitron', sans-serif", fontSize: 48, fontWeight: 900, color: g.col, lineHeight: 1 }}>{totalScore}/{total}</div>
+          <div style={{ fontFamily: "'Orbitron', sans-serif", fontSize: 22, color: g.col, marginTop: 4 }}>{pct}%</div>
+          <div style={{ fontSize: 14, color: "#94A3B8", marginTop: 4 }}>Overall Score</div>
+        </div>
+      </div>
+
+      {/* Per-module breakdown */}
+      <Card style={{ marginBottom: 20 }}>
+        <h3 style={{ fontFamily: "'Orbitron', sans-serif", fontSize: 12, color: "#7DD3FC", margin: "0 0 14px", letterSpacing: 1 }}>MODULE BREAKDOWN</h3>
+        {MODS.map((m, i) => {
+          const p = Math.round((scores[i] / m.qs.length) * 100);
+          const mg = grade(p);
+          return (
+            <div key={m.id} style={{ marginBottom: 12 }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 4 }}>
+                <span style={{ fontSize: 18 }}>{m.icon}</span>
+                <span style={{ flex: 1, fontSize: 13, color: "#E2E8F0" }}>{m.title}</span>
+                <span style={{ fontSize: 12, fontWeight: 700, color: mg.col }}>{scores[i]}/{m.qs.length} — {p}%</span>
+              </div>
+              <div style={{ height: 6, background: "rgba(255,255,255,0.08)", borderRadius: 3, overflow: "hidden" }}>
+                <div style={{ height: "100%", width: `${p}%`, background: `linear-gradient(90deg, ${m.color}, ${mg.col})`, borderRadius: 3, transition: "width 1s ease" }} />
+              </div>
+            </div>
+          );
+        })}
+      </Card>
+
+      <div style={{ textAlign: "center" }}>
+        <Btn onClick={onRestart} color="#1D4ED8">
+          Restart Assessment ↺
+        </Btn>
+      </div>
+    </div>
+  );
+}
+
+// ─── Main App ─────────────────────────────────────────────────────────────────
+function AstronomyAssessment() {
+  const [phase, setPhase] = useState("intro");
+  const [modIdx, setModIdx] = useState(0);
+  const [learnStep, setLearnStep] = useState(0);
+  const [qIdx, setQIdx] = useState(0);
+  const [sel, setSel] = useState(null);
+  const [feedback, setFeedback] = useState(false);
+  const [scores, setScores] = useState([0, 0, 0, 0, 0]);
+
+  const mod = MODS[modIdx];
+  const totalPossible = MODS.reduce((a, m) => a + m.qs.length, 0);
+  const totalScore = scores.reduce((a, b) => a + b, 0);
+
+  const progress = phase === "final" ? 100
+    : phase === "modend" ? ((modIdx + 1) / MODS.length) * 100
+    : ((modIdx + (phase === "quiz" ? 0.6 : phase === "learn" ? learnStep / 3 : 0)) / MODS.length) * 100;
+
+  function handleSelect(i) {
+    if (feedback) return;
+    setSel(i);
+    setFeedback(true);
+    if (i === mod.qs[qIdx].ans) {
+      setScores(prev => { const n = [...prev]; n[modIdx]++; return n; });
+    }
+  }
+
+  function handleNext() {
+    setSel(null); setFeedback(false);
+    if (qIdx < mod.qs.length - 1) { setQIdx(q => q + 1); }
+    else { setPhase("modend"); }
+  }
+
+  function handleNextMod() {
+    if (modIdx < MODS.length - 1) {
+      setModIdx(m => m + 1); setLearnStep(0); setQIdx(0);
+      setSel(null); setFeedback(false); setPhase("learn");
+    } else { setPhase("final"); }
+  }
+
+  function handleRestart() {
+    setPhase("intro"); setModIdx(0); setLearnStep(0); setQIdx(0);
+    setSel(null); setFeedback(false); setScores([0, 0, 0, 0, 0]);
+  }
+
+  const CSS = `
+    @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Exo+2:wght@300;400;600&display=swap');
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    @keyframes twinkle { from { opacity: 0.15; } to { opacity: 1; } }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: translateY(0); } }
+    @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
+    button { font-family: 'Exo 2', sans-serif; }
+  `;
+
+  return (
+    <div style={{
+      minHeight: "100vh",
+      background: "linear-gradient(160deg, #020617 0%, #0F0B2A 45%, #1A0A2E 75%, #020617 100%)",
+      fontFamily: "'Exo 2', sans-serif",
+      color: "#E2E8F0",
+      position: "relative",
+      overflowX: "hidden",
+    }}>
+      <style>{CSS}</style>
+
+      {/* Star field */}
+      <div style={{ position: "fixed", inset: 0, pointerEvents: "none", zIndex: 0 }}>
+        {STARS.map(s => (
+          <div key={s.id} style={{
+            position: "absolute", left: `${s.x}%`, top: `${s.y}%`,
+            width: `${s.r}px`, height: `${s.r}px`, borderRadius: "50%",
+            background: "white", opacity: s.o,
+            animation: `twinkle ${s.d}s ease-in-out infinite alternate`,
+            animationDelay: `${s.delay}s`,
+          }} />
+        ))}
+      </div>
+
+      {/* Progress bar */}
+      {phase !== "intro" && (
+        <>
+          <div style={{ position: "fixed", top: 0, left: 0, right: 0, zIndex: 100, height: 3, background: "rgba(255,255,255,0.08)" }}>
+            <div style={{ height: "100%", width: `${progress}%`, background: `linear-gradient(90deg, ${mod?.color || "#7C3AED"}, #EC4899)`, transition: "width 0.6s ease" }} />
+          </div>
+          <div style={{ position: "fixed", top: 8, right: 12, zIndex: 100, fontFamily: "'Orbitron', sans-serif", fontSize: 10, color: "#334155" }}>
+            {totalScore}/{totalPossible}
+          </div>
+        </>
+      )}
+
+      {/* Main content */}
+      <div style={{ position: "relative", zIndex: 10, maxWidth: 760, margin: "0 auto", padding: "clamp(16px, 4vw, 32px) clamp(14px, 3vw, 24px)", minHeight: "100vh" }}>
+        {phase === "intro" && <IntroScreen onStart={() => setPhase("learn")} />}
+        {phase === "learn" && <LearnScreen mod={mod} step={learnStep} setStep={setLearnStep} onQuiz={() => setPhase("quiz")} />}
+        {phase === "quiz" && <QuizScreen mod={mod} modIdx={modIdx} qIdx={qIdx} sel={sel} feedback={feedback} onSelect={handleSelect} onNext={handleNext} scores={scores} />}
+        {phase === "modend" && <ModEndScreen mod={mod} modIdx={modIdx} score={scores[modIdx]} total={mod.qs.length} onNext={handleNextMod} isLast={modIdx === MODS.length - 1} />}
+        {phase === "final" && <FinalScreen scores={scores} onRestart={handleRestart} />}
+      </div>
+    </div>
+  );
+}
+
+
+    const container = document.getElementById('root');
+    const root = ReactDOM.createRoot(container);
+    root.render(React.createElement(AstronomyAssessment));
+  </script>
+</body>
+</html>
